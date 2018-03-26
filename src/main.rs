@@ -8,15 +8,22 @@ fn print_usage() {
 }
 
 
+fn take2<I, T>(x: &mut I) -> Option<(T, T)>
+where I: Iterator<Item = T> {
+    let x1 = x.next()?;
+    let x2 = x.next()?;
+    Some((x1, x2))
+}
+
+
 fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
     let mut environ = HashMap::<&str, &str>::new();
 
     for pair in args_vec {
-        let splat: Vec<&str> = pair.splitn(2, '=').collect();
-        if splat.len() != 2 {
-            return Err(());
-        }
-        let (name, val) = (splat[0], splat[1]);
+        let (name, val) = match take2(&mut pair.splitn(2, '=')) {
+            None => return Err(()),
+            Some(nv) => nv,
+        };
         environ.insert(name, val);
     }
 
