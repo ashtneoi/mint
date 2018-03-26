@@ -16,25 +16,11 @@ where I: Iterator<Item = T> {
 }
 
 
-trait UnwrapOrErr<T> {
-    fn unwrap_or_err<E>(self, e: E) -> Result<T, E>;
-}
-
-impl<T> UnwrapOrErr<T> for Option<T> {
-    fn unwrap_or_err<E>(self, e: E) -> Result<T, E> {
-        match self {
-            None => Err(e),
-            Some(s) => Ok(s),
-        }
-    }
-}
-
-
 fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
     let mut environ = HashMap::<&str, &str>::new();
 
     for pair in args_vec {
-        let (name, val) = take2(&mut pair.splitn(2, '=')).unwrap_or_err(())?;
+        let (name, val) = take2(&mut pair.splitn(2, '=')).ok_or(())?;
         environ.insert(name, val);
     }
 
