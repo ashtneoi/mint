@@ -8,7 +8,7 @@ fn print_usage() {
 }
 
 
-fn args_to_environ(args_vec: &Vec<String>) -> HashMap<&str, &str> {
+fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
     let mut args = args_vec.iter();
 
     let mut environ = HashMap::<&str, &str>::new();
@@ -20,14 +20,13 @@ fn args_to_environ(args_vec: &Vec<String>) -> HashMap<&str, &str> {
 
         let splat: Vec<&str> = pair.splitn(2, '=').collect();
         if splat.len() != 2 {
-            print_usage();
-            exit(2);
+            return Err(());
         }
         let (name, val) = (splat[0], splat[1]);
         environ.insert(name, val);
     }
 
-    environ
+    Ok(environ)
 }
 
 
@@ -45,7 +44,10 @@ fn main() {
     };
 
     let environ_args_vec: Vec<String> = args.collect();
-    let mut environ = args_to_environ(&environ_args_vec);
+    let mut environ = match args_to_environ(&environ_args_vec) {
+        Err(_) => { print_usage(); exit(2); },
+        Ok(e) => e,
+    };
     environ.insert("#top_name", &tmpl_name);
 
     for (name, val) in &environ {
