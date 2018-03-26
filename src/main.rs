@@ -21,20 +21,23 @@ fn main() {
         Some(n) => n,
     };
 
-    let mut environ = HashMap::<String, String>::new();
-    environ.insert("#top_name".to_string(), tmpl_name.clone());
+    let environ_args_vec: Vec<String> = args.collect();
+    let mut environ_args = environ_args_vec.iter();
+
+    let mut environ = HashMap::<&str, &str>::new();
+    environ.insert("#top_name", &tmpl_name);
     loop {
-        let mut pair = match args.next() {
+        let pair = match environ_args.next() {
             None => break,
             Some(p) => p,
         };
-        let i = match pair.find('=') {
-            None => { print_usage(); exit(2); },
-            Some(i) => i,
-        };
-        let val = pair.split_off(i + 1);
-        let mut name = pair;
-        name.pop().unwrap();
+
+        let splat: Vec<&str> = pair.splitn(2, '=').collect();
+        if splat.len() != 2 {
+            print_usage();
+            exit(2);
+        }
+        let (name, val) = (splat[0], splat[1]);
         environ.insert(name, val);
     }
 
