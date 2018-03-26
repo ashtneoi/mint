@@ -3,8 +3,9 @@ use std::env;
 use std::process::exit;
 
 
-fn print_usage() {
+fn exit_with_usage() -> ! {
     println!("Usage: mint TMPLNAME [NAME=VAL ...]");
+    exit(2);
 }
 
 
@@ -36,16 +37,12 @@ fn main() {
         exit(1);
     }
 
-    let tmpl_name = match args.next() {
-        None => { print_usage(); exit(2); },
-        Some(n) => n,
-    };
+    let tmpl_name = args.next().unwrap_or_else(|| exit_with_usage());
 
     let environ_args_vec: Vec<String> = args.collect();
-    let mut environ = match args_to_environ(&environ_args_vec) {
-        Err(_) => { print_usage(); exit(2); },
-        Ok(e) => e,
-    };
+    let mut environ = args_to_environ(&environ_args_vec).unwrap_or_else(
+        |_| exit_with_usage()
+    );
     environ.insert("#top_name", &tmpl_name);
 
     for (name, val) in &environ {
