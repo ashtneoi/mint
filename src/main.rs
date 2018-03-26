@@ -16,14 +16,19 @@ where I: Iterator<Item = T> {
 }
 
 
+fn unwrap_else<T, E>(p: Option<T>, e: E) -> Result<T, E> {
+    match p {
+        None => Err(e),
+        Some(s) => Ok(s),
+    }
+}
+
+
 fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
     let mut environ = HashMap::<&str, &str>::new();
 
     for pair in args_vec {
-        let (name, val) = match take2(&mut pair.splitn(2, '=')) {
-            None => return Err(()),
-            Some(nv) => nv,
-        };
+        let (name, val) = unwrap_else(take2(&mut pair.splitn(2, '=')), ())?;
         environ.insert(name, val);
     }
 
