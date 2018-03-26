@@ -9,15 +9,9 @@ fn print_usage() {
 
 
 fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
-    let mut args = args_vec.iter();
-
     let mut environ = HashMap::<&str, &str>::new();
-    loop {
-        let pair = match args.next() {
-            None => break,
-            Some(p) => p,
-        };
 
+    for pair in args_vec {
         let splat: Vec<&str> = pair.splitn(2, '=').collect();
         if splat.len() != 2 {
             return Err(());
