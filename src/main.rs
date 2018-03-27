@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::env;
+use std::fs::File;
 use std::process::exit;
+use std::io::prelude::*;
+use std::io::BufReader;
 
 
 fn exit_with_usage() -> ! {
@@ -37,7 +40,7 @@ fn main() {
         exit(1);
     }
 
-    let tmpl_name = args.next().unwrap_or_else(|| exit_with_usage());
+    let tmpl_name = &args.next().unwrap_or_else(|| exit_with_usage());
 
     let environ_args_vec: Vec<String> = args.collect();
     let mut environ = args_to_environ(&environ_args_vec).unwrap_or_else(
@@ -45,7 +48,18 @@ fn main() {
     );
     environ.insert("#top_name", &tmpl_name);
 
-    for (name, val) in &environ {
-        println!("{} = \"{}\"", name, val);
-    }
+    let tf = File::open(tmpl_name).unwrap_or_else(
+        |e| { eprintln!("{}", e); exit(1); }
+    );
+    let tb = BufReader::new(tf);
+
+    let lines: Vec<String> = tb.lines().map(
+        |maybe_line| maybe_line.unwrap_or_else(
+            |e| { eprintln!("{}", e); exit(1); }
+        )
+    ).collect();
+
+    for line in &lines {
+        println!("{}", line);
+    };
 }
