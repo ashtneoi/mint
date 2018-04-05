@@ -36,6 +36,10 @@ fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
     Ok(environ)
 }
 
+fn str_find_at(s: &str, start: usize, pat: &str) -> Option<usize> {
+    s[start..].find(pat).and_then(|i| Some(start + i))
+}
+
 struct StrFindAll<'a, 'b> {
     s: &'a str,
     pat: &'b str,
@@ -46,14 +50,11 @@ impl<'a, 'b> Iterator for StrFindAll<'a, 'b> {
     type Item = usize;
 
     fn next(&mut self) -> Option<usize> {
-        match self.s[self.start..].find(self.pat) {
-            Some(pos) => {
-                let ret = Some(self.start + pos);
-                self.start += pos + self.pat.len();
-                ret
-            },
-            None => None,
-        }
+        str_find_at(self.s, self.start, self.pat)
+            .and_then(|pos| {
+                self.start = pos + self.pat.len();
+                Some(pos)
+            })
     }
 }
 
@@ -103,7 +104,12 @@ fn do_lines(lines: &Vec<String>) {
     for (row, line) in lines.iter().enumerate() {
         let first = true;
         for open_pos in str_find_all(line, open_pat) {
-            println!("{} {}", row, open_pos);
+            let close_pos = str_find_at(line, open_pos, close_pat)
+                .unwrap_or_else(|| {
+                    eprintln!("{}: Missing \"{}\"", row, close_pat);
+                    exit(1);
+                });
+            println!("{}: {}-{}", row, open_pos, close_pos);
         }
     }
 }
