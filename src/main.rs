@@ -27,6 +27,12 @@ fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
         environ.insert(name, val);
     }
 
+    println!("environ:");
+    for (name, val) in environ.iter() {
+        println!("{} = \"{}\"", name, val);
+    }
+    println!();
+
     Ok(environ)
 }
 
@@ -84,6 +90,7 @@ fn main() {
         }
     }
 
+    println!("tags:");
     for (row, col_from, col_to) in tags {
         println!("{} {}", row, &lines[row][col_from..col_to]);
     }
