@@ -36,6 +36,31 @@ fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
     Ok(environ)
 }
 
+struct StrFindAll<'a, 'b> {
+    s: &'a str,
+    pat: &'b str,
+    start: usize,
+}
+
+impl<'a, 'b> Iterator for StrFindAll<'a, 'b> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<usize> {
+        match self.s[self.start..].find(self.pat) {
+            Some(pos) => {
+                let ret = Some(self.start + pos);
+                self.start += pos + self.pat.len();
+                ret
+            },
+            None => None,
+        }
+    }
+}
+
+fn str_find_all<'a, 'b>(s: &'a str, pat: &'b str) -> StrFindAll<'a, 'b> {
+    StrFindAll { s, pat, start: 0 }
+}
+
 fn main() {
     let mut args = env::args();
 
@@ -65,33 +90,12 @@ fn main() {
             exit(1);
         });
 
-    let mut tags: Vec<(usize, usize, usize)> = Vec::new();
-
     let open_pat = "{{";
     let close_pat = "}}";
     for (row, line) in lines.iter().enumerate() {
-        let mut first = true;
-        let mut chunk_start: usize = 0;
-        for chunk in line.split(open_pat) {
-            if first {
-                first = false;
-            } else {
-                if !chunk.starts_with('!') {
-                    let tag_end_rel = chunk.find(close_pat).unwrap_or_else(|| {
-                        eprintln!("{}: Missing \"{}\"", row + 1, close_pat);
-                        exit(1);
-                    });
-                    let tag_start = chunk_start - open_pat.len();
-                    let tag_end = chunk_start + tag_end_rel + close_pat.len();
-                    tags.push((row, tag_start, tag_end));
-                }
-            }
-            chunk_start += chunk.len() + open_pat.len();
+        let first = true;
+        for open_pos in str_find_all(line, open_pat) {
+            println!("{} {}", row, open_pos);
         }
-    }
-
-    println!("tags:");
-    for (row, col_from, col_to) in tags {
-        println!("{} {}", row, &lines[row][col_from..col_to]);
     }
 }
