@@ -1,2 +1,4 @@
+.*.sw?
+
 /target/
 **/*.rs.bk
