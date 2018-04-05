@@ -77,6 +77,10 @@ fn main() {
     );
     environ.insert("#top_name", &tmpl_name);
 
+    do_file(tmpl_name, &environ);
+}
+
+fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) {
     let tf = File::open(tmpl_name).unwrap_or_else(|e| {
         eprintln!("{}", e);
         exit(1);
@@ -90,6 +94,10 @@ fn main() {
             exit(1);
         });
 
+    do_lines(&lines);
+}
+
+fn do_lines(lines: &Vec<String>) {
     let open_pat = "{{";
     let close_pat = "}}";
     for (row, line) in lines.iter().enumerate() {
