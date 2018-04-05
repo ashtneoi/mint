@@ -95,10 +95,13 @@ fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) {
             exit(1);
         });
 
-    do_lines(&lines);
+    do_lines(&lines, environ);
 }
 
-fn do_lines(lines: &Vec<String>) {
+fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>) {
+    // (row, from, to)
+    let mut replace = Vec::new();
+
     let open_pat = "{{";
     let close_pat = "}}";
     for (row, line) in lines.iter().enumerate() {
@@ -109,7 +112,18 @@ fn do_lines(lines: &Vec<String>) {
                     eprintln!("{}: Missing \"{}\"", row, close_pat);
                     exit(1);
                 });
-            println!("{}: {}-{}", row, open_pos, close_pos);
+            replace.push((row, open_pos, close_pos + close_pat.len()));
+        }
+    }
+
+    for (row, from, to) in replace {
+        let name_from = from + open_pat.len();
+        let name_to = to - close_pat.len();
+        let name = &lines[row][name_from..name_to];
+        if let Some(val) = environ.get(name) {
+            println!("{}: {}-{} ({} = {:?})", row, from, to, name, val);
+        } else {
+            eprintln!("{},{}: {} is not defined", row, from, name);
         }
     }
 }
