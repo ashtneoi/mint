@@ -89,7 +89,7 @@ fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) {
     let tb = io::BufReader::new(tf);
 
     let lines: Vec<String> = tb.lines()
-        .collect::<Result<_, _>>()
+        .collect::<Result<_, _>>() // TODO: understand this magic
         .unwrap_or_else(|e| {
             eprintln!("{}", e);
             exit(1);
