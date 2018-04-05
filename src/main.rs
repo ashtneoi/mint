@@ -1,24 +1,23 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
-use std::process::exit;
-use std::io::prelude::*;
 use std::io::BufReader;
-
+use std::io::prelude::*;
+use std::process::exit;
 
 fn exit_with_usage() -> ! {
     println!("Usage: mint TMPLNAME [NAME=VAL ...]");
     exit(2);
 }
 
-
 fn take2<I, T>(x: &mut I) -> Option<(T, T)>
-where I: Iterator<Item = T> {
+where
+    I: Iterator<Item = T>,
+{
     let x1 = x.next()?;
     let x2 = x.next()?;
     Some((x1, x2))
 }
-
 
 fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
     let mut environ = HashMap::<&str, &str>::new();
@@ -30,7 +29,6 @@ fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
 
     Ok(environ)
 }
-
 
 fn main() {
     let mut args = env::args();
@@ -48,16 +46,20 @@ fn main() {
     );
     environ.insert("#top_name", &tmpl_name);
 
-    let tf = File::open(tmpl_name).unwrap_or_else(
-        |e| { eprintln!("{}", e); exit(1); }
-    );
+    let tf = File::open(tmpl_name).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        exit(1);
+    });
     let tb = BufReader::new(tf);
 
-    let lines: Vec<String> = tb.lines().map(
-        |maybe_line| maybe_line.unwrap_or_else(
-            |e| { eprintln!("{}", e); exit(1); }
-        )
-    ).collect();
+    let lines: Vec<String> = tb.lines()
+        .map(|maybe_line| {
+            maybe_line.unwrap_or_else(|e| {
+                eprintln!("{}", e);
+                exit(1);
+            })
+        })
+        .collect();
 
     let mut tags: Vec<(usize, usize, usize)> = Vec::new();
 
@@ -72,7 +74,7 @@ fn main() {
             } else {
                 if !chunk.starts_with('!') {
                     let tag_end_rel = chunk.find(close_pat).unwrap_or_else(|| {
-                        eprintln!("{}: Missing \"{}\"", row+1, close_pat);
+                        eprintln!("{}: Missing \"{}\"", row + 1, close_pat);
                         exit(1);
                     });
                     let tag_start = chunk_start - open_pat.len();
@@ -85,6 +87,6 @@ fn main() {
     }
 
     for (row, col_from, col_to) in tags {
-        println!("{} {}", row, &lines[row][col_from .. col_to]);
+        println!("{} {}", row, &lines[row][col_from..col_to]);
     }
 }
