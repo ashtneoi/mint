@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
-use std::io::BufReader;
+use std::io;
 use std::io::prelude::*;
 use std::process::exit;
 
@@ -50,16 +50,14 @@ fn main() {
         eprintln!("{}", e);
         exit(1);
     });
-    let tb = BufReader::new(tf);
+    let tb = io::BufReader::new(tf);
 
     let lines: Vec<String> = tb.lines()
-        .map(|maybe_line| {
-            maybe_line.unwrap_or_else(|e| {
-                eprintln!("{}", e);
-                exit(1);
-            })
-        })
-        .collect();
+        .collect::<Result<_, _>>()
+        .unwrap_or_else(|e| {
+            eprintln!("{}", e);
+            exit(1);
+        });
 
     let mut tags: Vec<(usize, usize, usize)> = Vec::new();
 
