@@ -19,15 +19,15 @@ where
     Some((x1, x2))
 }
 
-fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
+fn args_to_environ(args_vec: &Vec<String>) -> Option<HashMap<&str, &str>> {
     let mut environ = HashMap::<&str, &str>::new();
 
     for pair in args_vec {
-        let (name, val) = take2(&mut pair.splitn(2, '=')).ok_or(())?;
+        let (name, val) = take2(&mut pair.splitn(2, '='))?;
         environ.insert(name, val);
     }
 
-    Ok(environ)
+    Some(environ)
 }
 
 fn str_find_at(s: &str, start: usize, pat: &str) -> Option<usize> {
@@ -68,7 +68,7 @@ fn main() {
 
     let environ_args_vec: Vec<String> = args.collect();
     let mut environ = args_to_environ(&environ_args_vec).unwrap_or_else(
-        |_| exit_with_usage()
+        || exit_with_usage()
     );
     environ.insert("#top_name", &tmpl_name);
 
