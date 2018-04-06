@@ -27,12 +27,6 @@ fn args_to_environ(args_vec: &Vec<String>) -> Result<HashMap<&str, &str>, ()> {
         environ.insert(name, val);
     }
 
-    println!("environ:");
-    for (name, val) in environ.iter() {
-        println!("{} = {:?}", name, val);
-    }
-    println!();
-
     Ok(environ)
 }
 
