@@ -99,31 +99,52 @@ fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) {
 }
 
 fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>) {
-    // (row, from, to)
-    let mut replace = Vec::new();
+    static OPEN_PAT: &str = "{{";
+    static CLOSE_PAT: &str = "}}";
 
-    let open_pat = "{{";
-    let close_pat = "}}";
+    let mut lines2 = Vec::new();
+
     for (row, line) in lines.iter().enumerate() {
-        let first = true;
-        for open_pos in str_find_all(line, open_pat) {
-            let close_pos = str_find_at(line, open_pos, close_pat)
+        // Some(to, from) or None (end)
+        let mut replace = vec![Some((0, 0))];
+
+        for open_pos in str_find_all(line, OPEN_PAT) {
+            let close_pos = str_find_at(line, open_pos, CLOSE_PAT)
                 .unwrap_or_else(|| {
-                    eprintln!("{}: Missing \"{}\"", row, close_pat);
+                    eprintln!("{}: Missing \"{}\"", row, CLOSE_PAT);
                     exit(1);
                 });
-            replace.push((row, open_pos, close_pos + close_pat.len()));
+            replace.push(
+                Some((open_pos, close_pos + CLOSE_PAT.len()))
+            );
         }
-    }
 
-    for (row, from, to) in replace {
-        let name_from = from + open_pat.len();
-        let name_to = to - close_pat.len();
-        let name = &lines[row][name_from..name_to];
-        if let Some(val) = environ.get(name) {
-            println!("{}: {}-{} ({} = {:?})", row, from, to, name, val);
-        } else {
-            eprintln!("{},{}: {} is not defined", row, from, name);
+        replace.push(None);
+
+        let mut line2 = "".to_string();
+
+        for window in replace.windows(2) {
+            let (prev, this) = (window[0], window[1]);
+            let (_, prev_to) = prev.unwrap();
+
+            if let Some((from, to)) = this {
+                line2.push_str(&line[prev_to..from]);
+
+                let name_from = from + OPEN_PAT.len();
+                let name_to = to - CLOSE_PAT.len();
+                let name = &line[name_from..name_to];
+                let val = environ.get(name)
+                    .unwrap_or_else(|| {
+                        eprintln!("{},{}: {} is not defined", row, from, name);
+                        exit(1);
+                    });
+                line2.push_str(val);
+            } else {
+                line2.push_str(&line[prev_to..]);
+            }
         }
+
+        println!("{}", line2);
+        lines2.push(line2);
     }
 }
