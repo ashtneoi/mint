@@ -78,10 +78,12 @@ fn main() {
     );
     environ.insert("#top_name", &tmpl_name);
 
-    do_file(tmpl_name, &environ);
+    for line in do_file(tmpl_name, &environ) {
+        println!("{}", line);
+    }
 }
 
-fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) {
+fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) -> Vec<String> {
     let tf = File::open(tmpl_name).unwrap_or_else(|e| {
         eprintln!("{}", e);
         exit(1);
@@ -95,10 +97,12 @@ fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) {
             exit(1);
         });
 
-    do_lines(&lines, environ);
+    do_lines(&lines, environ)
 }
 
-fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>) {
+fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
+    -> Vec<String>
+{
     static OPEN_PAT: &str = "{{";
     static CLOSE_PAT: &str = "}}";
 
@@ -144,7 +148,8 @@ fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>) {
             }
         }
 
-        println!("{}", line2);
         lines2.push(line2);
     }
+
+    lines2
 }
