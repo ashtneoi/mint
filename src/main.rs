@@ -72,30 +72,34 @@ fn main() {
     );
     environ.insert("#top_name", &tmpl_name);
 
-    for line in do_file(tmpl_name, &environ) {
-        println!("{}", line);
+    match do_file(tmpl_name, &environ) {
+        Ok(lines) => {
+            for line in lines {
+                println!("{}", line);
+            }
+        },
+        Err(e) => {
+            eprintln!("{}", e);
+            exit(1);
+        },
     }
 }
 
-fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>) -> Vec<String> {
-    let tf = File::open(tmpl_name).unwrap_or_else(|e| {
-        eprintln!("{}", e);
-        exit(1);
-    });
+fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>)
+    -> Result<Vec<String>, String>
+{
+    let tf = File::open(tmpl_name).map_err(|e| e.to_string())?;
     let tb = io::BufReader::new(tf);
 
     let lines: Vec<String> = tb.lines()
         .collect::<Result<_, _>>() // TODO: understand this magic
-        .unwrap_or_else(|e| {
-            eprintln!("{}", e);
-            exit(1);
-        });
+        .map_err(|e| e.to_string())?;
 
     do_lines(&lines, environ)
 }
 
 fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
-    -> Vec<String>
+    -> Result<Vec<String>, String>
 {
     static OPEN_PAT: &str = "{{";
     static CLOSE_PAT: &str = "}}";
@@ -108,10 +112,9 @@ fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
 
         for open_pos in str_find_all(line, OPEN_PAT) {
             let close_pos = str_find_at(line, open_pos, CLOSE_PAT)
-                .unwrap_or_else(|| {
-                    eprintln!("{}: Missing \"{}\"", row, CLOSE_PAT);
-                    exit(1);
-                });
+                .ok_or(
+                    format!("{}: Missing \"{}\"", row, CLOSE_PAT)
+                )?;
             replace.push(
                 Some((open_pos, close_pos + CLOSE_PAT.len()))
             );
@@ -132,10 +135,9 @@ fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
                 let name_to = to - CLOSE_PAT.len();
                 let name = &line[name_from..name_to];
                 let val = environ.get(name)
-                    .unwrap_or_else(|| {
-                        eprintln!("{},{}: {} is not defined", row, from, name);
-                        exit(1);
-                    });
+                    .ok_or(
+                        format!("{},{}: {} is not defined", row, from, name)
+                    )?;
                 line2.push_str(val);
             } else {
                 line2.push_str(&line[prev_to..]);
@@ -145,5 +147,5 @@ fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
         lines2.push(line2);
     }
 
-    lines2
+    Ok(lines2)
 }
