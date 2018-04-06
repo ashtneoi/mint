@@ -43,11 +43,9 @@ pub fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>)
 {
     let tf = File::open(tmpl_name).map_err(|e| e.to_string())?;
     let tb = io::BufReader::new(tf);
-
     let lines: Vec<String> = tb.lines()
         .collect::<Result<_, _>>() // TODO: understand this magic
-        .map_err(|e| e.to_string())?;
-
+        .map_err(|e| e.to_string())?; // TODO: make this friendlier
     do_lines(&lines, environ)
 }
 
@@ -58,11 +56,8 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
     static CLOSE_PAT: &str = "}}";
 
     let mut lines2 = Vec::new();
-
     for (row, line) in lines.iter().enumerate() {
-        // Some(to, from) or None (end)
-        let mut replace = vec![Some((0, 0))];
-
+        let mut replace = vec![Some((0, 0))]; // Some(to, from) or None (end)
         for open_pos in str_find_all(line, OPEN_PAT) {
             let close_pos = str_find_at(line, open_pos, CLOSE_PAT)
                 .ok_or(
@@ -72,18 +67,13 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
                 Some((open_pos, close_pos + CLOSE_PAT.len()))
             );
         }
-
         replace.push(None);
 
         let mut line2 = "".to_string();
-
         for window in replace.windows(2) {
             let (prev, this) = (window[0], window[1]);
             let (_, prev_to) = prev.unwrap();
-
             if let Some((from, to)) = this {
-                line2.push_str(&line[prev_to..from]);
-
                 let name_from = from + OPEN_PAT.len();
                 let name_to = to - CLOSE_PAT.len();
                 let name = &line[name_from..name_to];
@@ -91,14 +81,13 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
                     .ok_or(
                         format!("{},{}: {} is not defined", row, from, name)
                     )?;
+                line2.push_str(&line[prev_to..from]);
                 line2.push_str(val);
             } else {
                 line2.push_str(&line[prev_to..]);
             }
         }
-
         lines2.push(line2);
     }
-
     Ok(lines2)
 }
