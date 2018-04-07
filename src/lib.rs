@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
+use std::process::exit;
 
 pub fn take2<I, T>(x: &mut I) -> Option<(T, T)>
 where
@@ -101,4 +102,34 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
         lines2.push(line2);
     }
     Ok(lines2)
+}
+
+fn exit_with_usage() -> ! {
+    println!("Usage: mint TMPLNAME [NAME=VAL ...]");
+    exit(2);
+}
+
+fn args_to_environ<'a>(args: &[&'a str]) -> Option<HashMap<&'a str, &'a str>> {
+    let mut environ = HashMap::<&str, &str>::new();
+    for pair in args {
+        let (name, val) = take2(&mut pair.splitn(2, '='))?;
+        environ.insert(name, val);
+    }
+    Some(environ)
+}
+
+pub struct Mint<'a> {
+    pub tmpl_name: &'a str,
+    pub environ: HashMap<&'a str, &'a str>,
+}
+
+impl<'a> Mint<'a> {
+    pub fn with_args(args: &[&'a str]) -> Mint<'a> {
+        let tmpl_name = args.get(0).unwrap_or_else(|| exit_with_usage());
+        let environ_args: Vec<&str> = args[1..].to_vec();
+        let environ = args_to_environ(&environ_args).unwrap_or_else(
+            || exit_with_usage()
+        );
+        Mint { tmpl_name, environ }
+    }
 }
