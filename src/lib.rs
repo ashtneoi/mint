@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
-use std::process::exit;
 
 pub fn take2<I, T>(x: &mut I) -> Option<(T, T)>
 where
@@ -104,11 +103,25 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
     Ok(lines2)
 }
 
+trait InvertOption<T: Default> {
+    fn invert(self) -> Option<T>;
+}
+
+// TODO: Is this useful?
+impl<T: Default> InvertOption<T> for Option<T> {
+    fn invert(self) -> Option<T> {
+        match self {
+            Some(_) => None,
+            None => Some(T::default()),
+        }
+    }
+}
+
 fn args_to_environ<'a>(args: &[&'a str]) -> Option<HashMap<&'a str, &'a str>> {
     let mut environ = HashMap::<&str, &str>::new();
     for pair in args {
         let (name, val) = take2(&mut pair.splitn(2, '='))?;
-        environ.insert(name, val);
+        environ.insert(name, val).invert()?; // TODO: need an error message
     }
     Some(environ)
 }
