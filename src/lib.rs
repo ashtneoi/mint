@@ -104,11 +104,6 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
     Ok(lines2)
 }
 
-fn exit_with_usage() -> ! {
-    println!("Usage: mint TMPLNAME [NAME=VAL ...]");
-    exit(2);
-}
-
 fn args_to_environ<'a>(args: &[&'a str]) -> Option<HashMap<&'a str, &'a str>> {
     let mut environ = HashMap::<&str, &str>::new();
     for pair in args {
@@ -124,12 +119,10 @@ pub struct Mint<'a> {
 }
 
 impl<'a> Mint<'a> {
-    pub fn with_args(args: &[&'a str]) -> Mint<'a> {
-        let tmpl_name = args.get(0).unwrap_or_else(|| exit_with_usage());
+    pub fn with_args(args: &[&'a str]) -> Option<Mint<'a>> {
+        let tmpl_name = args.get(0)?;
         let environ_args: Vec<&str> = args[1..].to_vec();
-        let environ = args_to_environ(&environ_args).unwrap_or_else(
-            || exit_with_usage()
-        );
-        Mint { tmpl_name, environ }
+        let environ = args_to_environ(&environ_args)?;
+        Some(Mint { tmpl_name, environ })
     }
 }
