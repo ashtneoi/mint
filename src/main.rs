@@ -12,9 +12,9 @@ fn main() {
         exit(1);
     }
     let args: Vec<String> = args_iter.collect();
-    let mut m = Mint::with_args(&args.as_strs());
+    let m = Mint::with_args(&args.as_strs());
 
-    match do_file(m.tmpl_name, &mut m.environ) {
+    match do_file(m.tmpl_name, &m.environ) {
         Ok(lines) => {
             for line in lines {
                 println!("{}", line);
