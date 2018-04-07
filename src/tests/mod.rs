@@ -55,3 +55,21 @@ fn cli_no_dup() {
         None
     );
 }
+
+#[test]
+fn no_replacements() {
+    let lines = vec![
+        "onward toward the rising sun".to_string(),
+        "leave the cruel night behind".to_string(),
+    ];
+    let mut environ: HashMap<&str, &str> = HashMap::new();
+    environ.insert("aaa", "spinach");
+    environ.insert("ccc", "1234");
+    environ.insert("bbb", "()()");
+
+    let out = do_lines(&lines, &environ);
+    assert_eq!(
+        out,
+        Ok(lines),
+    );
+}
