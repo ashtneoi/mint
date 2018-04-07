@@ -86,12 +86,11 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
                 let name_to = close_pos;
                 let name = &line[name_from..name_to];
                 let val = environ.get(name)
-                    .ok_or(
+                    .ok_or_else(||
                         format!(
                             "{},{}: {} is not defined", row, open_pos, name
                         )
                     )?;
-                // TODO: use ok_or_else instead
                 replace.push(
                     Some((open_pos, close_pos + CLOSE_PAT.len(), val))
                 );
