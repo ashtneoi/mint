@@ -4,6 +4,8 @@ use std::process::exit;
 mod lib;
 use lib::{do_file, Mint, SliceAsStrs};
 
+#[cfg(test)]
+mod tests;
 
 fn main() {
     let mut args_iter = env::args();
