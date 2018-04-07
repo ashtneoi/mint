@@ -19,7 +19,7 @@ UTF-8.
 `template.txt:`
 ```none
 {{!foo}} renders to {{foo}}, and {{!! renders to {{!.
-It doesn't matter if {{!bar}} is defined, because we don't use it.
+It doesn't matter if bar is defined, because we don't use it.
 ```
 
 `mint template.txt foo=cat bar=sock`
@@ -27,7 +27,7 @@ It doesn't matter if {{!bar}} is defined, because we don't use it.
 Output:
 ```none
 {{foo}} renders to cat, and {{! renders to {{.
-It doesn't matter if {{bar}} is defined, because we don't use it.
+It doesn't matter if bar is defined, because we don't use it.
 ```
 
 
