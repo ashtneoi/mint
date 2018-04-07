@@ -38,6 +38,17 @@ fn str_find_all<'a, 'b>(s: &'a str, pat: &'b str) -> StrFindAll<'a, 'b> {
     StrFindAll { s, pat, start: 0 }
 }
 
+pub trait SliceAsStrs {
+    fn as_strs(&self) -> Vec<&str>;
+}
+
+// TODO: Is this actually useful?
+impl SliceAsStrs for [String] {
+    fn as_strs(&self) -> Vec<&str> {
+        self.iter().map(|s| &s[..]).collect()
+    }
+}
+
 pub fn do_file(tmpl_name: &str, environ: &HashMap<&str, &str>)
     -> Result<Vec<String>, String>
 {
