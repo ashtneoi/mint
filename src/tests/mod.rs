@@ -5,7 +5,7 @@ use lib::{do_file, do_lines, Mint};
 #[test]
 fn everything() {
     let args = &["src/tests/tmpl", "biz==_=", "foo=9*9/|"];
-    let m = Mint::with_args(args);
+    let m = Mint::with_args(args).unwrap();
     let out = do_file(m.tmpl_name, &m.environ);
     assert_eq!(
         out,
@@ -37,5 +37,17 @@ fn lines() {
             "()() pasta +spinach+".to_string(),
             "123412341234".to_string(),
         ]),
+    );
+}
+
+#[test]
+fn cli_no_dup() {
+    assert_eq!(
+        Mint::with_args(&["nothing", "xyz=99", "xyz=pancakes"]),
+        None
+    );
+    assert_eq!(
+        Mint::with_args(&["nothing", "m=m", "oooo=!!", "u=u", "oooo=juice"]),
+        None
     );
 }

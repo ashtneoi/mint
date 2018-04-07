@@ -113,6 +113,7 @@ fn args_to_environ<'a>(args: &[&'a str]) -> Option<HashMap<&'a str, &'a str>> {
     Some(environ)
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Mint<'a> {
     pub tmpl_name: &'a str,
     pub environ: HashMap<&'a str, &'a str>,
