@@ -64,34 +64,46 @@ pub fn do_lines(lines: &Vec<String>, environ: &HashMap<&str, &str>)
     -> Result<Vec<String>, String>
 {
     static OPEN_PAT: &str = "{{";
+    static OPEN_ESC: &str = "{{!";
     static CLOSE_PAT: &str = "}}";
 
     let mut lines2 = Vec::new();
     for (row, line) in lines.iter().enumerate() {
-        let mut replace = vec![Some((0, 0))]; // Some(to, from) or None (end)
+        // Some((to, from, val)) or None (end)
+        let mut replace = vec![Some((0, 0, ""))];
         for open_pos in str_find_all(line, OPEN_PAT) {
-            let close_pos = str_find_at(line, open_pos, CLOSE_PAT)
-                .ok_or(
-                    format!("{}: Missing \"{}\"", row, CLOSE_PAT)
-                )?;
-            replace.push(
-                Some((open_pos, close_pos + CLOSE_PAT.len()))
-            );
+            let name_start = line[open_pos + OPEN_PAT.len() ..].chars().next();
+            if name_start == Some('!') {
+                replace.push(
+                    Some((open_pos, open_pos + OPEN_ESC.len(), "{{"))
+                );
+            } else {
+                let close_pos = str_find_at(line, open_pos, CLOSE_PAT)
+                    .ok_or(
+                        format!("{}: Missing \"{}\"", row, CLOSE_PAT)
+                    )?;
+                let name_from = open_pos + OPEN_PAT.len();
+                let name_to = close_pos;
+                let name = &line[name_from..name_to];
+                let val = environ.get(name)
+                    .ok_or(
+                        format!(
+                            "{},{}: {} is not defined", row, open_pos, name
+                        )
+                    )?;
+                // TODO: use ok_or_else instead
+                replace.push(
+                    Some((open_pos, close_pos + CLOSE_PAT.len(), val))
+                );
+            }
         }
         replace.push(None);
 
         let mut line2 = "".to_string();
         for window in replace.windows(2) {
             let (prev, this) = (window[0], window[1]);
-            let (_, prev_to) = prev.unwrap();
-            if let Some((from, to)) = this {
-                let name_from = from + OPEN_PAT.len();
-                let name_to = to - CLOSE_PAT.len();
-                let name = &line[name_from..name_to];
-                let val = environ.get(name)
-                    .ok_or(
-                        format!("{},{}: {} is not defined", row, from, name)
-                    )?;
+            let (_, prev_to, _) = prev.unwrap();
+            if let Some((from, _, val)) = this {
                 line2.push_str(&line[prev_to..from]);
                 line2.push_str(val);
             } else {
