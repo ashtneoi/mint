@@ -50,4 +50,8 @@ fn cli_no_dup() {
         Mint::with_args(&["nothing", "m=m", "oooo=!!", "u=u", "oooo=juice"]),
         None
     );
+    assert_eq!(
+        Mint::with_args(&["nothing", "wxyz=abcd", "m=m", "wxyz=abcd"]),
+        None
+    );
 }
