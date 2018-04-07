@@ -73,3 +73,20 @@ fn no_replacements() {
         Ok(lines),
     );
 }
+
+#[test]
+fn test_brace_escape() {
+    let lines = vec![
+        "{{!!foo}} {{!foo}} {{foo}} {{!".to_string(),
+    ];
+    let mut environ: HashMap<&str, &str> = HashMap::new();
+    environ.insert("foo", "FOO");
+
+    let out = do_lines(&lines, &environ);
+    assert_eq!(
+        out,
+        Ok(vec![
+            "{{!foo}} {{foo}} FOO {{".to_string(),
+        ])
+    );
+}
