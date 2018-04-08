@@ -10,7 +10,6 @@ fn everything() {
     assert_eq!(
         out,
         Ok(vec![
-            // TODO: can these be &str?
             "9*9/|bar=_=".to_string(),
             "x9*9/|=_=x".to_string(),
         ])
