@@ -132,6 +132,9 @@ fn args_to_environ<'a>(args: &[&'a str]) -> Option<HashMap<&'a str, &'a str>> {
     let mut environ = HashMap::<&str, &str>::new();
     for pair in args {
         let (name, val) = take2(&mut pair.splitn(2, '='))?;
+        if name.starts_with("!") || name.contains("}}") {
+            return None;
+        }
         environ.insert(name, val).invert()?; // TODO: need an error message
     }
     Some(environ)
