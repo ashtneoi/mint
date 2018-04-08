@@ -90,3 +90,28 @@ fn test_brace_escape() {
         ])
     );
 }
+
+#[test]
+fn cli_disallowed_names() {
+    assert_ne!(
+        Mint::with_args(&["nothing"]),
+        None
+    );
+
+    assert_eq!(
+        Mint::with_args(&["nothing", "}}=foo"]),
+        None
+    );
+    assert_eq!(
+        Mint::with_args(&["nothing", "foo}}bar=biz"]),
+        None
+    );
+    assert_eq!(
+        Mint::with_args(&["nothing", "!=foo"]),
+        None
+    );
+    assert_eq!(
+        Mint::with_args(&["nothing", "!foo=bar"]),
+        None
+    );
+}
