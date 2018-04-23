@@ -8,7 +8,7 @@ use lib::{do_file, Mint, SliceAsStrs};
 mod tests;
 
 fn exit_with_usage() -> ! {
-    println!("Usage: mint TMPLPATH [NAME=VAL ...]");
+    eprintln!("Usage: mint TMPLPATH [NAME=VAL ...]");
     exit(2);
 }
 
