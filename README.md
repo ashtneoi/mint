@@ -22,7 +22,7 @@ UTF-8.
 It doesn't matter if bar is defined, because we don't use it.
 ```
 
-`mint template.txt foo=cat bar=sock`
+`$ mint template.txt foo=cat bar=sock`
 
 Output:
 ```none
