@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::{do_file, do_lines, Mint};
+use crate::lib::{do_file, do_lines, Mint};
 
 #[test]
 fn everything() {
