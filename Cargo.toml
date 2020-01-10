@@ -1,6 +1,6 @@
 [package]
 name = "mint-template-engine"
-version = "1.2.0-rc.0"
+version = "1.2.0-rc.1"
 edition = "2018"
 authors = ["ashtneoi <ashtneoi@gmail.com>"]
 license = "MIT"
