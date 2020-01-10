@@ -1,8 +1,11 @@
 [package]
 name = "mint-template-engine"
 version = "1.2.0-rc.0"
+edition = "2018"
 authors = ["ashtneoi <ashtneoi@gmail.com>"]
 license = "MIT"
-edition = "2018"
+description = "Mint template engine"
+homepage = "https://github.com/ashtneoi/mint"
+repository = "https://github.com/ashtneoi/mint"
 
 [dependencies]
